@@ -1,3 +1,5 @@
+// Package chromosomes provides functionality for emulating an arbitrary genome
+// and producing offspring from two parents.
 package chromosomes
 
 import (
@@ -5,11 +7,21 @@ import (
   "time"
 )
 
+// type Chromosome is a mapping between trait keys and their integer values
 type Chromosome struct {
   traitKeys []string
   traits map[string]uint8
 }
 
+// Get returns the uint8 value of the given trait
+func (c *Chromosome) Get(trait string) (uint8, bool) {
+  v, exists := c.traits[trait]
+  return v, exists
+}
+
+// Crossover takes two chromosomes and produces a random child chromosome based on the parents' genome
+//
+// Clients can control randomness by calling rand.Seed(x)
 func (c *Chromosome) Crossover(other *Chromosome) *Chromosome {
   tmap := make(map[string]uint8, 0)
 
@@ -27,17 +39,22 @@ func (c *Chromosome) Crossover(other *Chromosome) *Chromosome {
 }
 
 
-type chromosomeBuilder struct {
+type ChromosomeBuilder struct {
   traitKeys []string
   traits map[string]uint8
 }
 
-func NewBuilder() *chromosomeBuilder {
-  return &chromosomeBuilder{traitKeys: make([]string, 0),
+// NewBuilder creates a new empty ChromosomeBuilder
+func NewBuilder() *ChromosomeBuilder {
+  return &ChromosomeBuilder{traitKeys: make([]string, 0),
     traits: make(map[string]uint8, 0)}
 }
 
-func (builder *chromosomeBuilder) AddTrait(trait string) {
+// Add a certain trait to this ChromosomeBuilder
+//
+// A trait represents a particular gene.
+// This function will panic if two of the same traits are added
+func (builder *ChromosomeBuilder) AddTrait(trait string) {
   if _, duplicate := builder.traits[trait]; duplicate {
     panic("Duplicate trait: " + trait)
   }
@@ -46,7 +63,10 @@ func (builder *chromosomeBuilder) AddTrait(trait string) {
   builder.traits[trait] = 1
 }
 
-func (builder *chromosomeBuilder) BuildRandom() *Chromosome {
+// BuildRandom creates a random Chromosome from this builder
+//
+// Clients can control randomness by calling rand.Seed(x)
+func (builder *ChromosomeBuilder) BuildRandom() *Chromosome {
   builderTraitKeys := builder.traitKeys
 
   ckeys := make([]string, 0)
