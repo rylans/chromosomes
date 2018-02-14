@@ -2,11 +2,28 @@ package chromosomes
 
 import (
   "math/rand"
+  "time"
 )
 
 type Chromosome struct {
   traitKeys []string
   traits map[string]uint8
+}
+
+func (c *Chromosome) Crossover(other *Chromosome) *Chromosome {
+  tmap := make(map[string]uint8, 0)
+
+  for _, k := range c.traitKeys {
+    theseBits := c.traits[k]
+    thisMask := uint8(rand.Intn(256))
+
+    thoseBits := other.traits[k]
+    thatMask := uint8(255 - thisMask)
+
+    tmap[k] = (theseBits & thisMask) | (thoseBits & thatMask)
+  }
+
+  return &Chromosome{traitKeys: c.traitKeys, traits: tmap}
 }
 
 
@@ -29,9 +46,7 @@ func (builder *chromosomeBuilder) AddTrait(trait string) {
   builder.traits[trait] = 1
 }
 
-func (builder *chromosomeBuilder) BuildRandom(seed int64) *Chromosome {
-  rand.Seed(seed)
-
+func (builder *chromosomeBuilder) BuildRandom() *Chromosome {
   builderTraitKeys := builder.traitKeys
 
   ckeys := make([]string, 0)
@@ -45,4 +60,8 @@ func (builder *chromosomeBuilder) BuildRandom(seed int64) *Chromosome {
   }
 
   return &Chromosome{traitKeys: ckeys, traits: traitmap}
+}
+
+func init() {
+  rand.Seed(time.Now().UTC().UnixNano())
 }
