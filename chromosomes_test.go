@@ -41,8 +41,8 @@ func TestCrossover(t *testing.T){
   valB, _ := child.Get("b")
   valC, _ := child.Get("c")
   assert.Equal(t, uint8(0xb6), valA)
-  assert.Equal(t, uint8(0xf7), valB)
-  assert.Equal(t, uint8(0x2), valC)
+  assert.Equal(t, uint8(0xe7), valB)
+  assert.Equal(t, uint8(0x66), valC)
 }
 
 func TestFitnessEvaluation(t *testing.T){
@@ -66,3 +66,17 @@ func TestFitnessEvaluation(t *testing.T){
   assert.Equal(t, uint8(0xff), winval)
 }
 
+func TestCrossoverWithMutation(t *testing.T){
+  rand.Seed(1401)
+
+  b := NewBuilder()
+  b.MutationChance(1.0)
+  b.AddTrait("a")
+
+  parent1 := b.BuildRandom()
+  parent2 := b.BuildRandom()
+
+  child := parent1.Crossover(parent2)
+  valA, _ := child.Get("a")
+  assert.Equal(t, uint8(0x28), valA)
+}

@@ -8,10 +8,26 @@ import (
   "time"
 )
 
+// Default chance of a mutation occuring on a per-trait basis
+const DefaultMutationChance = 1e-5
+
+type mutate func(input uint8) uint8
+
+func perTraitMutator(chance float64) mutate {
+  f := func(input uint8) uint8 {
+    if rand.Float64() < chance {
+      return input ^ uint8(rand.Intn(256))
+    }
+    return input
+  }
+  return f
+}
+
 // type Chromosome is a mapping between trait keys and their integer values
 type Chromosome struct {
   traitKeys []string
   traits map[string]uint8
+  mutator mutate
 }
 
 // Get returns the uint8 value of the given trait
@@ -34,21 +50,24 @@ func (c *Chromosome) Crossover(other *Chromosome) *Chromosome {
     thatMask := uint8(255 - thisMask)
 
     tmap[k] = (theseBits & thisMask) | (thoseBits & thatMask)
+    tmap[k] = c.mutator(tmap[k])
   }
 
-  return &Chromosome{traitKeys: c.traitKeys, traits: tmap}
+  return &Chromosome{traitKeys: c.traitKeys, traits: tmap, mutator: c.mutator}
 }
 
 
 type ChromosomeBuilder struct {
   traitKeys []string
   traits map[string]uint8
+  mutator mutate
 }
 
 // NewBuilder creates a new empty ChromosomeBuilder
 func NewBuilder() *ChromosomeBuilder {
+  mutationf := perTraitMutator(DefaultMutationChance)
   return &ChromosomeBuilder{traitKeys: make([]string, 0),
-    traits: make(map[string]uint8, 0)}
+    traits: make(map[string]uint8, 0), mutator: mutationf}
 }
 
 // Add a certain trait to this ChromosomeBuilder
@@ -62,6 +81,17 @@ func (builder *ChromosomeBuilder) AddTrait(trait string) {
 
   builder.traitKeys = append(builder.traitKeys, trait)
   builder.traits[trait] = 1
+}
+
+// Set the chance of a mutation occuring on a trait
+//
+// chance must be in the interval [0.0, 1.0] otherwise this function panics
+func (builder *ChromosomeBuilder) MutationChance(chance float64) {
+  if chance < 0.0 || chance > 1.0 {
+    panic("Chance out of range (zero to one)")
+  }
+  mutationf := perTraitMutator(chance)
+  builder.mutator = mutationf
 }
 
 // BuildRandom creates a random Chromosome from this builder
@@ -80,7 +110,7 @@ func (builder *ChromosomeBuilder) BuildRandom() *Chromosome {
     traitmap[k] = uint8(rand.Intn(256))
   }
 
-  return &Chromosome{traitKeys: ckeys, traits: traitmap}
+  return &Chromosome{traitKeys: ckeys, traits: traitmap, mutator: builder.mutator}
 }
 
 // MostFit returns the chromosome in the list of candidates that yields the max value when the fitness function fn is applied to it
