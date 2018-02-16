@@ -31,6 +31,11 @@ type Chromosome struct {
   mutator mutate
 }
 
+// Len returns the number of bits in this chromosome
+func (c *Chromosome) Len() int {
+  return 8 * len(c.traitKeys)
+}
+
 // Difference returns the number of bits that differ between c and other
 //
 // This function panics if the two chromosomes are incompatible with each other

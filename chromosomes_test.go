@@ -118,3 +118,16 @@ func TestEmptyChromosomeDifferenceZero(t *testing.T){
 
     assert.Equal(t, 0, c2.Difference(c1))
 }
+
+func TestLength(t *testing.T) {
+  b := NewBuilder()
+
+  cZero := b.BuildRandom()
+
+  b.AddTrait("asdf")
+
+  cEight := b.BuildRandom()
+
+  assert.Equal(t, 0, cZero.Len())
+  assert.Equal(t, 8, cEight.Len())
+}
