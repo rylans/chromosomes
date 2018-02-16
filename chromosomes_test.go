@@ -131,3 +131,20 @@ func TestLength(t *testing.T) {
   assert.Equal(t, 0, cZero.Len())
   assert.Equal(t, 8, cEight.Len())
 }
+
+func TestGeneticDiversityDecreases(t *testing.T){
+  b := NewBuilder()
+  b.MutationChance(0)
+  b.AddTrait("t1")
+  b.AddTrait("t2")
+
+  parent1 := b.BuildRandom()
+  parent2 := b.BuildRandom()
+  parentDifference := parent1.Difference(parent2)
+
+  child1 := parent1.Crossover(parent2)
+  child2 := parent1.Crossover(parent2)
+  childDifference := child1.Difference(child2)
+
+  assert.Equal(t, true, childDifference < parentDifference)
+}
