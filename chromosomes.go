@@ -42,20 +42,27 @@ func (c *Chromosome) Len() int {
 func (c *Chromosome) Difference(other *Chromosome) int {
   diff := 0
   for _, k := range c.traitKeys {
-    cTrait, _ := c.Get(k)
-    oTrait, exists := other.Get(k)
-    if !exists {
-      panic("Incompatible chromosome error")
-    }
+    cTrait := c.Get(k)
+    oTrait := other.Get(k)
     diff = diff + bits.OnesCount8(cTrait ^ oTrait)
   }
   return diff
 }
 
 // Get returns the uint8 value of the given trait
-func (c *Chromosome) Get(trait string) (uint8, bool) {
+func (c *Chromosome) Get(trait string) uint8 {
   v, exists := c.traits[trait]
-  return v, exists
+  if !exists {
+    panic("Chromosome has no such trait: " + trait)
+  }
+  return v
+}
+
+// Clone creates a child chromosome from the given chromosome crossing over itself
+//
+// Mutations can occur during cloning
+func (c *Chromosome) Clone() *Chromosome {
+  return c.Crossover(c)
 }
 
 // Crossover takes two chromosomes and produces a random child chromosome based on the parents' genome
