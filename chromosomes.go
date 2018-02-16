@@ -1,9 +1,10 @@
-// Package chromosomes provides functionality for emulating an arbitrary genome
+// Package chromosomes provides functionality for simulating a bitstring chromosome
 // and producing offspring from two parents.
 package chromosomes
 
 import (
   "math/rand"
+  "math/bits"
   "math"
   "time"
 )
@@ -28,6 +29,22 @@ type Chromosome struct {
   traitKeys []string
   traits map[string]uint8
   mutator mutate
+}
+
+// Difference returns the number of bits that differ between c and other
+//
+// This function panics if the two chromosomes are incompatible with each other
+func (c *Chromosome) Difference(other *Chromosome) int {
+  diff := 0
+  for _, k := range c.traitKeys {
+    cTrait, _ := c.Get(k)
+    oTrait, exists := other.Get(k)
+    if !exists {
+      panic("Incompatible chromosome error")
+    }
+    diff = diff + bits.OnesCount8(cTrait ^ oTrait)
+  }
+  return diff
 }
 
 // Get returns the uint8 value of the given trait

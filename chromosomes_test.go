@@ -6,7 +6,6 @@ import (
   "math/rand"
 )
 
-
 func TestChromosomeBuilding(t *testing.T){
   rand.Seed(1401)
 
@@ -79,4 +78,43 @@ func TestCrossoverWithMutation(t *testing.T){
   child := parent1.Crossover(parent2)
   valA, _ := child.Get("a")
   assert.Equal(t, uint8(0x28), valA)
+}
+
+func TestSetMutationPanics(t *testing.T) {
+  b := NewBuilder()
+
+  assert.Panics(t,
+    func() { b.MutationChance(1.01) }, "Expected panic")
+}
+
+func TestChromosomeDifferenceSymmetric(t *testing.T){
+  b := NewBuilder()
+  b.AddTrait("t1")
+  b.AddTrait("t2")
+
+  parent1 := b.BuildRandom()
+  parent2 := b.BuildRandom()
+
+  assert.Equal(t, parent1.Difference(parent2), parent2.Difference(parent1))
+}
+
+func TestChromosomeDifferencePanics(t *testing.T){
+  build1 := NewBuilder()
+  build1.AddTrait("foo")
+
+  build2 := NewBuilder()
+  build2.AddTrait("bar")
+
+  assert.Panics(t,
+    func() { build1.BuildRandom().Difference(build2.BuildRandom()) },
+    "Did not panic")
+}
+
+func TestEmptyChromosomeDifferenceZero(t *testing.T){
+    b := NewBuilder()
+
+    c1 := b.BuildRandom()
+    c2 := b.BuildRandom()
+
+    assert.Equal(t, 0, c2.Difference(c1))
 }
