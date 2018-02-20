@@ -14,6 +14,8 @@ const DefaultMutationChance = 1e-5
 
 type mutate func(input uint8) uint8
 
+type crossoverRule func(c1 *Chromosome, c2 *Chromosome) *Chromosome
+
 func perTraitMutator(chance float64) mutate {
   f := func(input uint8) uint8 {
     if rand.Float64() < chance {
@@ -29,6 +31,7 @@ type Chromosome struct {
   traitKeys []string
   traits map[string]uint8
   mutator mutate
+  crossoverRule
 }
 
 // Len returns the number of bits in this chromosome
@@ -69,17 +72,29 @@ func (c *Chromosome) Clone() *Chromosome {
 //
 // Clients can control randomness by calling rand.Seed(x)
 func (c *Chromosome) Crossover(other *Chromosome) *Chromosome {
-  tmap := make(map[string]uint8, 0)
+  return c.crossoverRule(c, other)
+}
 
-  for _, k := range c.traitKeys {
-    thisMask := uint8(rand.Intn(256))
-    thatMask := uint8(255 - thisMask)
+func standardCrossover() crossoverRule {
+  f := func (c *Chromosome, other *Chromosome) *Chromosome {
+    tmap := make(map[string]uint8, len(c.traitKeys))
 
-    tmap[k] = (c.Get(k) & thisMask) | (other.Get(k) & thatMask)
-    tmap[k] = c.mutator(tmap[k])
+    for _, k := range c.traitKeys {
+      thisMask := uint8(rand.Intn(256))
+      thatMask := uint8(255 - thisMask)
+
+      tmap[k] = (c.Get(k) & thisMask) | (other.Get(k) & thatMask)
+      tmap[k] = c.mutator(tmap[k])
+    }
+
+    return &Chromosome{
+	traitKeys: c.traitKeys, 
+	traits: tmap, 
+	mutator: c.mutator, 
+	crossoverRule: c.crossoverRule,
+    }
   }
-
-  return &Chromosome{traitKeys: c.traitKeys, traits: tmap, mutator: c.mutator}
+  return f
 }
 
 
@@ -87,13 +102,18 @@ type ChromosomeBuilder struct {
   traitKeys []string
   traits map[string]uint8
   mutator mutate
+  crossoverRule
 }
 
 // NewBuilder creates a new empty ChromosomeBuilder
 func NewBuilder() *ChromosomeBuilder {
   mutationf := perTraitMutator(DefaultMutationChance)
-  return &ChromosomeBuilder{traitKeys: make([]string, 0),
-    traits: make(map[string]uint8, 0), mutator: mutationf}
+  return &ChromosomeBuilder{
+    traitKeys: make([]string, 0),
+    traits: make(map[string]uint8, 0),
+    mutator: mutationf,
+    crossoverRule: standardCrossover(),
+  }
 }
 
 // Add a certain trait to this ChromosomeBuilder
@@ -120,6 +140,11 @@ func (builder *ChromosomeBuilder) MutationChance(chance float64) {
   builder.mutator = mutationf
 }
 
+// Set the function which produces a child chromosome from two parents during the Crossover call
+func (builder *ChromosomeBuilder) setCrossoverRule(f crossoverRule) {
+  builder.crossoverRule = f
+}
+
 // BuildRandom creates a random Chromosome from this builder
 //
 // Clients can control randomness by calling rand.Seed(x)
@@ -136,7 +161,12 @@ func (builder *ChromosomeBuilder) BuildRandom() *Chromosome {
     traitmap[k] = uint8(rand.Intn(256))
   }
 
-  return &Chromosome{traitKeys: ckeys, traits: traitmap, mutator: builder.mutator}
+  return &Chromosome{
+    traitKeys: ckeys, 
+    traits: traitmap, 
+    mutator: builder.mutator, 
+    crossoverRule: builder.crossoverRule,
+  }
 }
 
 // MostFit returns the chromosome in the list of candidates that yields the max value when the fitness function fn is applied to it

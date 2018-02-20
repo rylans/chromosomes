@@ -165,3 +165,37 @@ func TestCloneWithMutation(t *testing.T){
 
   assert.Equal(t, true, c2.Get("A") != c1.Get("A"))
 }
+
+func TestCustomCrossoverTakesFirstParent(t *testing.T){
+  b := NewBuilder()
+  b.MutationChance(0)
+  b.AddTrait("A")
+
+  b.setCrossoverRule( func(c1 *Chromosome, c2 *Chromosome) *Chromosome {
+    return c1
+  })
+
+  c1 := b.BuildRandom()
+  c2 := b.BuildRandom()
+
+  child := c1.Crossover(c2)
+
+  assert.Equal(t, c1.Get("A"), child.Get("A"))
+}
+
+func TestCustomCrossoverTakesSecondParent(t *testing.T){
+  b := NewBuilder()
+  b.MutationChance(0)
+  b.AddTrait("A")
+
+  b.setCrossoverRule( func(c1 *Chromosome, c2 *Chromosome) *Chromosome {
+    return c2
+  })
+
+  c1 := b.BuildRandom()
+  c2 := b.BuildRandom()
+
+  child := c1.Crossover(c2)
+
+  assert.Equal(t, c2.Get("A"), child.Get("A"))
+}
