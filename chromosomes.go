@@ -42,14 +42,14 @@ func (c *Chromosome) Len() int {
 func (c *Chromosome) Difference(other *Chromosome) int {
   diff := 0
   for _, k := range c.traitKeys {
-    cTrait := c.Get(k)
-    oTrait := other.Get(k)
-    diff = diff + bits.OnesCount8(cTrait ^ oTrait)
+    diff += bits.OnesCount8(c.Get(k) ^ other.Get(k))
   }
   return diff
 }
 
 // Get returns the uint8 value of the given trait
+//
+// This function panics if such trait does not exist
 func (c *Chromosome) Get(trait string) uint8 {
   v, exists := c.traits[trait]
   if !exists {
@@ -72,13 +72,10 @@ func (c *Chromosome) Crossover(other *Chromosome) *Chromosome {
   tmap := make(map[string]uint8, 0)
 
   for _, k := range c.traitKeys {
-    theseBits := c.traits[k]
     thisMask := uint8(rand.Intn(256))
-
-    thoseBits := other.traits[k]
     thatMask := uint8(255 - thisMask)
 
-    tmap[k] = (theseBits & thisMask) | (thoseBits & thatMask)
+    tmap[k] = (c.Get(k) & thisMask) | (other.Get(k) & thatMask)
     tmap[k] = c.mutator(tmap[k])
   }
 
@@ -127,14 +124,14 @@ func (builder *ChromosomeBuilder) MutationChance(chance float64) {
 //
 // Clients can control randomness by calling rand.Seed(x)
 func (builder *ChromosomeBuilder) BuildRandom() *Chromosome {
-  builderTraitKeys := builder.traitKeys
+  traits := len(builder.traitKeys)
 
-  ckeys := make([]string, 0)
-  for _, k := range builderTraitKeys {
+  ckeys := make([]string, 0, traits)
+  for _, k := range builder.traitKeys {
     ckeys = append(ckeys, k)
   }
 
-  traitmap := make(map[string]uint8, 0)
+  traitmap := make(map[string]uint8, traits)
   for _, k := range ckeys {
     traitmap[k] = uint8(rand.Intn(256))
   }
