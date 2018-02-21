@@ -39,27 +39,6 @@ func TestCrossover(t *testing.T){
   assert.Equal(t, uint8(0x66), valC)
 }
 
-func TestFitnessEvaluation(t *testing.T){
-  rand.Seed(1401)
-
-  fn := func(x *Chromosome) float64 {
-    v := x.Get("X")
-    return float64(v)
-  }
-
-  b := NewBuilder()
-  b.AddTrait("X")
-
-  c1 := b.BuildRandom()
-  c2 := b.BuildRandom()
-  c3 := b.BuildRandom()
-
-  winner := MostFit(fn, c1, c2,c3)
-
-  winval := winner.Get("X")
-  assert.Equal(t, uint8(0xff), winval)
-}
-
 func TestCrossoverWithMutation(t *testing.T){
   rand.Seed(1401)
 

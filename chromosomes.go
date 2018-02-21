@@ -5,7 +5,6 @@ package chromosomes
 import (
   "math/rand"
   "math/bits"
-  "math"
   "time"
 )
 
@@ -167,23 +166,6 @@ func (builder *ChromosomeBuilder) BuildRandom() *Chromosome {
     mutator: builder.mutator, 
     crossoverRule: builder.crossoverRule,
   }
-}
-
-// MostFit returns the chromosome in the list of candidates that yields the max value when the fitness function fn is applied to it
-//
-// This function panics if the list of candidates is empty
-func MostFit(fn func(x *Chromosome) float64, candidates ...*Chromosome) *Chromosome {
-  topfitness := -math.MaxFloat64
-  topcandidate := candidates[0]
-
-  for _, c := range candidates {
-    fitness := fn(c)
-    if fitness > topfitness {
-      topfitness = fitness
-      topcandidate = c
-    }
-  }
-  return topcandidate
 }
 
 func init() {
