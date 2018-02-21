@@ -22,11 +22,11 @@ func stepOptimize(fitness FitnessFn, cb *chromosomes.ChromosomeBuilder, steps in
   }
 
   for i := 0; i < steps; i++ {
+    elite := mostFit(fitness, pool...)
     if len(pool) > maxPoolSize {
       pool = pool[:maxPoolSize]
     }
 
-    elite := mostFit(fitness, pool...)
     poolLength := len(pool)
     pool = append(pool, elite.Crossover(pool[poolLength-1]))
     pool = append(pool, elite.Crossover(pool[poolLength-3]))
