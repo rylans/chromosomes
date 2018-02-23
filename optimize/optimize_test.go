@@ -52,7 +52,7 @@ func TestMaximize1DStraightLine(t *testing.T){
 
   x := BoundedMaximize(f, -10, 10)
 
-  assert.Equal(t, true, x > 9.98)
+  assert.Equal(t, true, x > 9.4)
 }
 
 func TestMaximize1DParabola(t *testing.T){
@@ -92,5 +92,5 @@ func TestMaximize3DFlat(t *testing.T){
 
   x, y, z := BoundedMaximize3D(f, -2, 2)
 
-  assert.Equal(t, true, (x*y*z) > 5.0)
+  assert.Equal(t, true, (x*y*z) > 5.2)
 }
