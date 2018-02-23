@@ -21,9 +21,7 @@ func BoundedMaximize(f RealFunction, min, max int) (x float64) {
   b := chromosomes.NewBuilder()
   b.AddTrait("X")
 
-  fitnessf := boundedFitnessFunc1d(min, max, f)
-  result := Optimize(fitnessf, b)
-
+  result := Optimize(boundedFitnessFunc1d(min, max, f), b)
   x = rescale(result.Get("X"), min, max)
   return
 }
@@ -34,11 +32,23 @@ func BoundedMaximize2D(f RealFunction2D, min, max int) (x,y float64) {
   b.AddTrait("X")
   b.AddTrait("Y")
 
-  fitnessf := boundedFitnessFunc2d(min, max, f)
-  result := Optimize(fitnessf, b)
-
+  result := Optimize(boundedFitnessFunc2d(min, max, f), b)
   x = rescale(result.Get("X"), min, max)
   y = rescale(result.Get("Y"), min, max)
+  return
+}
+
+// Maximize a three-dimensional real-valued function
+func BoundedMaximize3D(f RealFunction3D, min, max int) (x,y,z float64) {
+  b := chromosomes.NewBuilder()
+  b.AddTrait("X")
+  b.AddTrait("Y")
+  b.AddTrait("Z")
+
+  result := Optimize(boundedFitnessFunc3d(min, max, f), b)
+  x = rescale(result.Get("X"), min, max)
+  y = rescale(result.Get("Y"), min, max)
+  z = rescale(result.Get("Z"), min, max)
   return
 }
 

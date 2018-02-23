@@ -3,6 +3,7 @@ package optimize
 import (
   "math/bits"
   "testing"
+  "math"
   "github.com/stretchr/testify/assert"
   "github.com/rylans/chromosomes"
 )
@@ -71,4 +72,25 @@ func TestMaximize2DPlane(t *testing.T){
   x, y := BoundedMaximize2D(f, -10, 10)
 
   assert.Equal(t, true, (x*y) > 80.0)
+}
+
+func TestMaximize2DBumpy(t *testing.T){
+  f := func(x, y float64) float64 {
+   return math.Cos(x) * math.Cos(y) * math.Exp(-(x*x)-(y*y))
+  }
+
+  x, y := BoundedMaximize2D(f, -1, 1)
+
+  assert.Equal(t, true, x < 0.1)
+  assert.Equal(t, true, x > -0.1)
+  assert.Equal(t, true, y < 0.1)
+  assert.Equal(t, true, y > -0.1)
+}
+
+func TestMaximize3DFlat(t *testing.T){
+  f := func(x, y, z float64) float64 {return x*y*z}
+
+  x, y, z := BoundedMaximize3D(f, -2, 2)
+
+  assert.Equal(t, true, (x*y*z) > 5.0)
 }
