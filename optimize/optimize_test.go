@@ -45,3 +45,30 @@ func threeGeneBuilder() *chromosomes.ChromosomeBuilder {
   b.AddTrait(GENE3)
   return b
 }
+
+func TestMaximize1DStraightLine(t *testing.T){
+  f := func(x float64) float64 {return x}
+
+  x := BoundedMaximize(f, -10, 10)
+
+  assert.Equal(t, true, x > 9.98)
+}
+
+func TestMaximize1DParabola(t *testing.T){
+  f := func(x float64) float64 {
+    return -1.0*(x*x)
+  }
+
+  x := BoundedMaximize(f, -10, 10)
+
+  assert.Equal(t, true, x > -0.1)
+  assert.Equal(t, true, x < 0.1)
+}
+
+func TestMaximize2DPlane(t *testing.T){
+  f := func(x, y float64) float64 {return x*y}
+
+  x, y := BoundedMaximize2D(f, -10, 10)
+
+  assert.Equal(t, true, (x*y) > 80.0)
+}
